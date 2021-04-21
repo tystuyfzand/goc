@@ -1,5 +1,6 @@
 goc
 ===
+[![Build Status](https://github.drone.meow.tf/api/badges/tystuyfzand/goc/status.svg)](https://github.drone.meow.tf/tystuyfzand/goc) ![Docker Pulls](https://img.shields.io/docker/pulls/tystuyfzand/goc)
 
 A simple wrapper to run your Go builds with, supporting multiple threads for multiple builds at once.
 
