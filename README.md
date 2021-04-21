@@ -27,7 +27,7 @@ If you wish to change how goc outputs binaries (for example, output to folders f
 Credits
 -------
 
-[across](https://github.com/LordRusk/across) was the inspiration for this, however I wanted to do it a bit differently.
+[across](https://github.com/LordRusk/across) was the inspiration for this, as well as some of the base code, however I wanted to do it a bit differently.
 
 Caveats
 -------
