@@ -3,6 +3,8 @@ goc
 
 A simple wrapper to run your Go builds with, supporting multiple threads for multiple builds at once.
 
+This tool was primarily built for use with CI (such as Drone, GitLab CI, etc) and building many releases at once, but it will work wherever you want it to.
+
 Usage
 -----
 
