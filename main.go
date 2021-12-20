@@ -52,7 +52,7 @@ func compiler(i chan compileOpts, o chan finState) {
 		// Replace -o FILENAME with -o FILENAME_os_arch
 		for i, v := range opt.args {
 			if v == "-o" {
-				replacer := strings.NewReplacer("{name}", opt.args[i+1], "{OS}", opt.os, "{arch}", opt.arch)
+				replacer := strings.NewReplacer("{name}", opt.args[i+1], "{os}", opt.os, "{arch}", opt.arch)
 				fs.Filename = replacer.Replace(fileTemplate)
 
 				if opt.os == "windows" {
