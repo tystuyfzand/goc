@@ -13,3 +13,17 @@ steps:
       repo: tystuyfzand/goc
       tags:
         - latest
+  - name: build
+    image: tystuyfzand/goc:latest
+    volumes:
+      - name: build
+        path: /build
+    commands:
+      - mkdir -p /build
+      - goc -o /build/goc
+    environment:
+      GOOS: linux,windows,darwin
+      GOARCH: 386,amd64,arm,arm64
+volumes:
+  - name: build
+    temp: {}
