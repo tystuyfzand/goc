@@ -24,6 +24,11 @@ If you wish to change how goc outputs binaries (for example, output to folders f
 
 `GOBINARY="{os}/{name}_{os}_{arch}"`
 
+Output
+------
+
+All compilation is logged to the console when complete. There is an additional output format available which contains information like os, arch, size, and hash for each file accessible by setting `GOC_OUTPUT` to either `-` (stdout) or a file name/path.
+
 Credits
 -------
 

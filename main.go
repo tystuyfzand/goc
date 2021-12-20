@@ -44,7 +44,10 @@ func compiler(i chan compileOpts, o chan finState) {
 	hasher := sha256.New()
 
 	for opt := range i {
-		var fs finState
+		fs := finState{
+			OS:   opt.os,
+			Arch: opt.arch,
+		}
 
 		// Replace -o FILENAME with -o FILENAME_os_arch
 		for i, v := range opt.args {
@@ -268,12 +271,28 @@ func main() {
 		}).Info("Finished compiling ", fs.Filename)
 	}
 
-	// TODO: File output if we have a directory from the file names?
 	b, err := json.MarshalIndent(results, "", "\t")
 
 	if err != nil {
 		return
 	}
 
-	os.Stdout.Write(b)
+	output := os.Getenv("GOC_OUTPUT")
+
+	if output == "" {
+		return
+	} else if output == "-" {
+		os.Stdout.Write(b)
+		return
+	}
+
+	f, err := os.Create(output)
+
+	if err != nil {
+		log.WithError(err).Warning("Unable to output result file")
+	}
+
+	defer f.Close()
+
+	f.Write(b)
 }
