@@ -18,16 +18,16 @@ var (
 
 // compileOpts represents a compile job's options
 type compileOpts struct {
-	os string
+	os   string
 	arch string
 	args []string
-	env []string
+	env  []string
 }
 
 // finState is a finished binary state
 type finState struct {
-	os string
-	arch string
+	os       string
+	arch     string
 	filename string
 	err      error
 }
@@ -36,7 +36,6 @@ type finState struct {
 func compiler(i chan compileOpts, o chan finState) {
 	for opt := range i {
 		var fs finState
-
 
 		// Replace -o FILENAME with -o FILENAME_os_arch
 		for i, v := range opt.args {
@@ -107,13 +106,13 @@ func supportedSystems(newEnv []string) (systemList, error) {
 		s := list.Find(parts[0])
 
 		log.WithFields(log.Fields{
-			"os": parts[0],
+			"os":   parts[0],
 			"arch": parts[1],
 		}).Debug("Adding OS/Arch")
 
 		if s == nil {
 			s = &system{
-				name: parts[0],
+				name:  parts[0],
 				archs: []string{parts[1]},
 			}
 
@@ -220,10 +219,10 @@ func main() {
 
 		if fs.err != nil {
 			log.WithFields(log.Fields{
-				"os": fs.os,
-				"arch": fs.arch,
+				"os":    fs.os,
+				"arch":  fs.arch,
 				"error": fs.err,
-			}).Warn("Compilation failed")
+			}).Fatalln("Compilation failed")
 		} else {
 			log.Printf("Finished compiling %s", fs.filename)
 		}
