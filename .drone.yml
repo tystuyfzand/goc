@@ -19,6 +19,8 @@ steps:
     volumes:
       - name: build
         path: /build
+      - name: dockersock
+        path: /var/run/docker.sock
     settings:
       username:
         from_secret: docker_username
@@ -30,3 +32,6 @@ steps:
 volumes:
   - name: build
     temp: {}
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
