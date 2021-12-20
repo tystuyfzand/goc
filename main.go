@@ -3,8 +3,13 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -26,37 +31,41 @@ type compileOpts struct {
 
 // finState is a finished binary state
 type finState struct {
-	os       string
-	arch     string
-	filename string
-	err      error
+	OS       string `json:"os"`
+	Arch     string `json:"arch"`
+	Filename string `json:"filename"`
+	Size     int64  `json:"size"`
+	Hash     string `json:"hash"`
+	Error    error  `json:"error"`
 }
 
 // compiler is a goroutine which receives options off of i, and outputs to o
 func compiler(i chan compileOpts, o chan finState) {
+	hasher := sha256.New()
+
 	for opt := range i {
 		var fs finState
 
 		// Replace -o FILENAME with -o FILENAME_os_arch
 		for i, v := range opt.args {
 			if v == "-o" {
-				replacer := strings.NewReplacer("{name}", opt.args[i+1], "{os}", opt.os, "{arch}", opt.arch)
-				fs.filename = replacer.Replace(fileTemplate)
+				replacer := strings.NewReplacer("{name}", opt.args[i+1], "{OS}", opt.os, "{arch}", opt.arch)
+				fs.Filename = replacer.Replace(fileTemplate)
 
 				if opt.os == "windows" {
-					fs.filename += ".exe"
+					fs.Filename += ".exe"
 				}
 
-				opt.args[i+1] = fs.filename
+				opt.args[i+1] = fs.Filename
 				break
 			}
 		}
 
-		if strings.Contains(fs.filename, "/") {
-			err := os.MkdirAll(path.Dir(fs.filename), 0655)
+		if strings.Contains(fs.Filename, "/") {
+			err := os.MkdirAll(path.Dir(fs.Filename), 0655)
 
 			if err != nil {
-				fs.err = err
+				fs.Error = err
 				o <- fs
 				continue
 			}
@@ -76,7 +85,28 @@ func compiler(i chan compileOpts, o chan finState) {
 		output, err := cmd.CombinedOutput()
 
 		if err != nil {
-			fs.err = fmt.Errorf("Failed to compile %s: %s: %s\n", fs.filename, bytes.TrimSpace(output), err)
+			fs.Error = fmt.Errorf("Failed to compile %s: %s: %s\n", fs.Filename, bytes.TrimSpace(output), err)
+		} else {
+			stat, err := os.Stat(fs.Filename)
+
+			if err != nil {
+				fs.Error = errors.New("unable to stat output file, compilation failed")
+			} else {
+				fs.Size = stat.Size()
+			}
+
+			hasher.Reset()
+
+			f, err := os.Open(fs.Filename)
+
+			if err != nil {
+				fs.Error = errors.New("unable to hash output file")
+			} else {
+				io.Copy(hasher, f)
+				f.Close()
+
+				fs.Hash = hex.EncodeToString(hasher.Sum(nil))
+			}
 		}
 
 		o <- fs
@@ -214,17 +244,36 @@ func main() {
 		}
 	}
 
+	results := make([]finState, 0)
+
 	for x := 0; x < numSys; x++ {
 		fs := <-o
 
-		if fs.err != nil {
+		if fs.Error != nil {
 			log.WithFields(log.Fields{
-				"os":    fs.os,
-				"arch":  fs.arch,
-				"error": fs.err,
+				"os":    fs.OS,
+				"arch":  fs.Arch,
+				"error": fs.Error,
 			}).Fatalln("Compilation failed")
-		} else {
-			log.Printf("Finished compiling %s", fs.filename)
 		}
+
+		results = append(results, fs)
+
+		log.WithFields(log.Fields{
+			"os":   fs.OS,
+			"arch": fs.Arch,
+			"file": fs.Filename,
+			"size": fs.Size,
+			"hash": fs.Hash,
+		}).Info("Finished compiling ", fs.Filename)
 	}
+
+	// TODO: File output if we have a directory from the file names?
+	b, err := json.MarshalIndent(results, "", "\t")
+
+	if err != nil {
+		return
+	}
+
+	os.Stdout.Write(b)
 }
