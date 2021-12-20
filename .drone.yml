@@ -16,11 +16,6 @@ steps:
       GOARCH: 386,amd64,arm,arm64
   - name: docker
     image: plugins/docker
-    volumes:
-      - name: build
-        path: /build
-      - name: dockersock
-        path: /var/run/docker.sock
     settings:
       username:
         from_secret: docker_username
@@ -32,6 +27,3 @@ steps:
 volumes:
   - name: build
     temp: {}
-  - name: dockersock
-    host:
-      path: /var/run/docker.sock
