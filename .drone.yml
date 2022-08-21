@@ -23,10 +23,10 @@ steps:
         from_secret: docker_password
       repo: tystuyfzand/goc
       tags:
-        - '${GO_VERSION}'
+        - '$${GO_VERSION}'
         - latest
-      build_args_from_env:
-        - GO_VERSION
+      build_args:
+        - GO_VERSION=${GO_VERSION}
 volumes:
   - name: build
     temp: {}
