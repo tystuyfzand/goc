@@ -1,4 +1,4 @@
-module meow.tf/goc
+module github.com/tystuyfzand/goc
 
 go 1.19
 

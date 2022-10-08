@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.19
+ARG BASE_IMAGE=golang:alpine
 
 # Build with the latest Go image
 FROM golang:alpine AS builder
@@ -9,7 +9,7 @@ ADD . /app
 RUN cd /app && go build -o goc
 
 # Run inside the specified Go image
-FROM golang:${GO_VERSION}-alpine
+FROM $BASE_IMAGE
 
 RUN apk --no-cache add git gcc
 

@@ -14,6 +14,16 @@ steps:
     environment:
       GOOS: linux,windows,darwin
       GOARCH: 386,amd64,arm,arm64
+  - name: tags
+    image: alpine
+    volumes:
+      - name: build
+        path: /build
+    commands:
+      - echo "go${GO_VERSION}" > .tags
+    when:
+      ref:
+        - refs/tags/*
   - name: docker
     image: plugins/docker
     settings:
@@ -22,11 +32,11 @@ steps:
       password:
         from_secret: docker_password
       repo: tystuyfzand/goc
-      tags:
-        - '$${GO_VERSION}'
-        - latest
       build_args:
-        - GO_VERSION=${GO_VERSION}
+        - BASE_IMAGE=golang:${GO_VERSION}-alpine
+    when:
+      ref:
+        - refs/tags/*
 volumes:
   - name: build
     temp: {}
