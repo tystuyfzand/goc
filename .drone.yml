@@ -20,7 +20,7 @@ steps:
       - name: build
         path: /build
     commands:
-      - echo "go${GO_VERSION}" > .tags
+      - echo "go${GO_VERSION:-1.20}" > .tags
     when:
       ref:
         - refs/tags/*
@@ -33,7 +33,7 @@ steps:
         from_secret: docker_password
       repo: tystuyfzand/goc
       build_args:
-        - BASE_IMAGE=golang:${GO_VERSION}-alpine
+        - BASE_IMAGE=golang:${GO_VERSION:-1.20}-alpine
     when:
       ref:
         - refs/tags/*
